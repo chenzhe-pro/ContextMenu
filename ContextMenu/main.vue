@@ -1,6 +1,22 @@
 <template>
-  <div class="contextmenu-wrap" v-show="status" :style="style">
-    <ContextMenu :icon="icon" :menu="menu" :resolve="resolve"></ContextMenu>
+  <div
+    class="contextmenu-wrap"
+    v-show="status"
+    :style="{
+      left: style.left + 'px',
+      top: style.top + 'px',
+      width: width + 'px'
+    }"
+  >
+    <ContextMenu
+      :icon="icon"
+      :menu="menu"
+      :resolve="resolve"
+      :current-pos="style"
+      :parent-index="0"
+      :width="width"
+      first
+    ></ContextMenu>
   </div>
 </template>
 
@@ -43,6 +59,13 @@ export default {
       // 点击menu按钮时执行的方法
       type: Function,
       default: function() {}
+    },
+    width: {
+      // 菜单宽度
+      type: Number,
+      default: function() {
+        return 155;
+      }
     }
     // reject: { // 不点击按钮点击其他地方关闭时执行的方法 .catch(e => {})
     //   type: Function,
@@ -54,15 +77,11 @@ export default {
       let x = this.axis.x;
       let y = this.axis.y;
       // 判断menu距离浏览器可视窗口底部距离,以免距离底部太近的时候，会导致menu被遮挡
-      let menuHeight = this.menu.length * 32; // 不能用scrollHeight,获取到的menu是上一次的menu宽高
-      let menuWidth = 150; // 不能用scrollWidth,同理
+      let menuHeight = this.menu.length * 30; // 不能用scrollHeight,获取到的menu是上一次的menu宽高
+      let menuWidth = this.width; // 不能用scrollWidth,同理
       return {
-        left:
-          (document.body.clientWidth < x + menuWidth ? x - menuWidth : x) +
-          'px',
-        top:
-          (document.body.clientHeight < y + menuHeight ? y - menuHeight : y) +
-          'px'
+        left: document.body.clientWidth < x + menuWidth ? x - menuWidth : x,
+        top: document.body.clientHeight < y + menuHeight ? y - menuHeight : y
       };
     }
   },
@@ -71,13 +90,7 @@ export default {
       status: false
     };
   },
-  methods: {
-    fnHandler(item) {
-      this.status = false;
-      if (item.fn) item.fn(this.customEvent);
-      this.resolve(item.action);
-    }
-  },
+  methods: {},
   beforeDestroy() {
     document.body.removeChild(this.$el);
   },
@@ -110,14 +123,14 @@ $menu-height: 30px;
     border: 1px solid #ccc;
   }
   .contextmenu__item {
-    width: 155px;
+    /*width: 155px;*/
     height: $menu-height;
     line-height: $menu-height;
     border-radius: 4px;
     background: #fff;
     text-decoration: none;
     list-style: none;
-    position: relative;
+    /*position: relative;*/
     .button {
       cursor: pointer;
       width: 100%;
@@ -140,9 +153,9 @@ $menu-height: 30px;
         text-align: center;
       }
       .contextmenu {
-        position: absolute;
-        right: calc(-100% - 2px);
-        top: -1px;
+        position: fixed;
+        /*right: calc(-100% - 2px);*/
+        /*top: -1px;*/
         display: none;
       }
       &:hover {

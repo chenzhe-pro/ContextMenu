@@ -1,7 +1,14 @@
 <template>
-  <ul class="contextmenu">
+  <ul
+    class="contextmenu"
+    :style="{
+      left: menuStyle.left + 'px',
+      top: menuStyle.top + 'px',
+      width: width + 'px'
+    }"
+  >
     <li
-      v-for="item in menu"
+      v-for="(item, index) in menu"
       class="contextmenu__item"
       :key="item.action || item.name"
       :id="item.action || item.name"
@@ -17,6 +24,9 @@
           v-if="item.children && item.children.length > 0"
           :menu="item.children"
           :icon="icon"
+          :current-pos="menuStyle"
+          :parent-index="index"
+          :width="width"
           :resolve="resolve"
         ></context-menu>
       </div>
@@ -44,17 +54,41 @@ export default {
           // { icon: '', name: '', action: '', fn: function() {} },
           // 模板，必须有name是国际化传过来, action是作为key和action的存在, icon如果显示但不传icon的话会留空白
           // { icon: 'el-icon-view', name: '查看', action: 'view', fn: function() {} },
-          { icon: 'el-icon-edit', name: '编辑', action: 'edit' },
-          { icon: 'el-icon-setting', name: '设置', action: 'setting' }
+          // {icon: 'el-icon-edit', name: '编辑', action: 'edit'},
+          // {icon: 'el-icon-setting', name: '设置', action: 'setting'}
           // { icon: 'el-icon-delete', name: '删除', action: 'delete' }, // 此处传入参数时记得国际化
           // { icon: 'el-icon-printer', name: '打印', action: 'print' },
         ];
       }
     },
+    width: {
+      // 菜单宽度
+      type: Number
+    },
     resolve: {
       // 点击menu按钮时执行的方法
-      type: Function,
-      default: function() {}
+      type: Function
+    },
+    currentPos: {
+      type: Object
+    },
+    relativePos: {
+      type: Object,
+      default: function() {
+        return { left: 0, top: 0 };
+      }
+    },
+    first: {
+      type: Boolean,
+      default: function() {
+        return false;
+      }
+    },
+    parentIndex: {
+      type: Number,
+      default() {
+        return 0;
+      }
     }
     // reject: { // 不点击按钮点击其他地方关闭时执行的方法 .catch(e => {})
     //   type: Function,
@@ -66,9 +100,44 @@ export default {
       status: false
     };
   },
+  computed: {
+    menuStyle() {
+      let position = {};
+      let menuHeight = this.menu.length * 30;
+      let menuWidth = this.width;
+      if (this.first) {
+        return this.currentPos;
+      }
+      if (document.body.clientWidth < this.currentPos.left + menuWidth * 2) {
+        position.left =
+          this.currentPos.left +
+          menuWidth -
+          5 -
+          (this.currentPos.left + menuWidth * 2 - document.body.clientWidth);
+      } else {
+        position.left = this.currentPos.left + menuWidth - 2;
+      }
+      if (
+        document.body.clientHeight <
+        this.currentPos.top + menuHeight + this.parentIndex * 30
+      ) {
+        position.top =
+          this.currentPos.top +
+          this.parentIndex * 30 -
+          5 -
+          (this.currentPos.top +
+            menuHeight +
+            this.parentIndex * 30 -
+            document.body.clientHeight);
+      } else {
+        position.top = this.currentPos.top + this.parentIndex * 30;
+      }
+      return position;
+    }
+  },
   methods: {
     fnHandler(item) {
-      if(item.children&&item.children.length>0){
+      if (item.children && item.children.length > 0) {
         return false;
       }
       this.status = false;
@@ -81,11 +150,10 @@ export default {
   },
   mounted() {
     // 挂载后才开始计算左右，隐藏挂载后显示不会闪一下
-    this.$nextTick(function() {
-      this.status = true;
-    });
+    // this.$nextTick(function () {
+    //   this.status = true;
+    // });
   },
-  components: {
-  }
+  components: {}
 };
 </script>

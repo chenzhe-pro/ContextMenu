@@ -30,6 +30,7 @@ const ContextMenu = function(options) {
     });
     if (options.icon !== undefined) instance.icon = options.icon;
     if (options.menu !== undefined) instance.menu = options.menu;
+    if (options.width !== undefined) instance.width = options.width;
     if (options.event !== undefined) {
       instance.customEvent = options.event;
       instance.axis = { x: options.event.x, y: options.event.y };
